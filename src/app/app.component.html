@@ -1,23 +1,30 @@
 <mat-toolbar color="primary">
   <span>{{ title }}</span>
-    <span class="example-fill-remaining-space"></span>
-    <span>  </span>
+  <span class="example-fill-remaining-space"></span>
+  <span> </span>
 </mat-toolbar>
 <div class="flex-container">
   <div class="left-container">
-      <div class="flex-text-area">
-              <textarea mdInput class="text-area-control" placeholder="Leave a comment" [formControl]="textAreaControl"></textarea>
-      </div>
-      <div class="flex-button-area">
-          <button mat-raised-button color="primary" (click)="getASTJSON()"> Submit Code </button>
-        </div>
+    <div class="flex-text-area">
+      <textarea mdInput class="text-area-control" placeholder="Leave a comment" [formControl]="textAreaControl"></textarea>
+    </div>
+    <div class="flex-button-area">
+      <button mat-raised-button color="primary" (click)="getASTJSON()"> Submit Code </button>
+    </div>
   </div>
   <div class="right-container">
-    <table>
-      <tr *ngFor="let item of keys">
-        <td>{{ item }}</td><td> {{ output[item].join(",") }} </td>
-      </tr>
-      </table>
+    <mat-accordion>
+      <mat-expansion-panel *ngFor="let item of keys">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ item }} - {{ output[item].length }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div *ngFor="let data of output[item]" class="data-div">
+          {{ data}}
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
   </div>
 </div>
 

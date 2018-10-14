@@ -1,0 +1,19 @@
+.data-div {
+    text-align: left;
+}
+.data-div::after, .mat-expansion-panel-header{
+    border:1px solid #fff;
+}
+.mat-expansion-panel-header {
+    background: #646464;
+}
+.mat-expansion-panel-header-title {
+    color:#fff !important;
+}
+.mat-expansion-panel-header:hover , .mat-expansion-panel-header.mat-expanded:focus{
+    background: #646464 !important;
+}
+
+.mat-expansion-indicator::after {
+    color:#fff !important;
+}
