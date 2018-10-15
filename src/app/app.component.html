@@ -6,7 +6,7 @@
 <div class="flex-container">
   <div class="left-container">
     <div class="flex-text-area">
-      <textarea mdInput class="text-area-control" placeholder="Leave a comment" [formControl]="textAreaControl"></textarea>
+      <textarea mdInput class="text-area-control" placeholder="Please past your code to get references " [formControl]="textAreaControl"></textarea>
     </div>
     <div class="flex-button-area">
       <button mat-raised-button color="primary" (click)="getASTJSON()"> Submit Code </button>
@@ -14,7 +14,7 @@
   </div>
   <div class="right-container">
     <mat-accordion>
-      <mat-expansion-panel *ngFor="let item of keys">
+      <mat-expansion-panel *ngFor="let item of keys" >
         <mat-expansion-panel-header>
           <mat-panel-title>
             {{ item }} - {{ output[item].length }}
