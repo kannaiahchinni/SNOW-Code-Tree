@@ -11,6 +11,13 @@
     <div class="flex-button-area">
       <button mat-raised-button color="primary" (click)="getASTJSON()"> Submit Code </button>
     </div>
+    <div>
+      <textarea mdInput placeholder="your output" [formControl]="outputControl">
+
+      </textarea>
+
+    </div>
+
   </div>
   <div class="right-container">
     <mat-accordion>
