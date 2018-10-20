@@ -10,7 +10,7 @@ export class AstService {
   constructor(private http: Http) { }
 
   getASTJSON(data) {
-    const url = 'http://localhost:3000/api/ast/parse',
+    const url = 'http://localhost:3000/api/ast/tree/parse',
     headers = new Headers({ 'Content-Type': 'application/json' , 'cache-control': 'no-cache'}),
     options = new RequestOptions({ headers: headers }),
     object = {'data': data},
