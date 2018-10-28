@@ -5,7 +5,7 @@ var estraverse = require('estraverse');
 var variableList = {};
 var variables = [];
 var memberFuncitons = {};
-var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery','next','query'];
+var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery','next','query','Date','getTime'];
 var scriptName;
 
 
@@ -56,9 +56,10 @@ exports.getASTtreeJSON = function(req,res,next) {
            parseExpressionStatement(node);
         }else if( node.type === 'CallExpression' ) {
             parseCallExpression(node);
+        }else if( node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration' ) {
+           if( node.id )
+            referenceStore(node.id.name);
         }
-
-
       }
     });
 
@@ -87,7 +88,7 @@ function parseCallExpression(node) {
   } else if (node.callee && node.callee.object && node.callee.object.type === 'ThisExpression') {
     findParent(node, variables[0] + '.' + node.callee.property.name);
 
-  } else if( ignoreObjectList.indexOf(getReference(node.callee.object.name)) < 0  && ignoreObjectList.indexOf(node.callee.property.name) < 0 ) { //if(node.parent.type === 'AssignmentExpression' || node.parent.type === 'VariableDeclarator'){
+  } else if( node.callee && node.callee.object && ignoreObjectList.indexOf(getReference(node.callee.object.name)) < 0  && ignoreObjectList.indexOf(node.callee.property.name) < 0 ) { //if(node.parent.type === 'AssignmentExpression' || node.parent.type === 'VariableDeclarator'){
     var name = getReference(node.callee.object.name);
     if(name && name !== "undefined")
       findParent(node, getReference(node.callee.object.name) + '.' + node.callee.property.name)
@@ -183,6 +184,8 @@ function getClassName(variable, list) {
 function findParent(node, classNamefunctionName) {
   if (node.type === 'Property' || (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression')) {
     storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName)
+  } else if((node.id && node.type === 'FunctionExpression' ||  node.type === 'FunctionDeclaration') && node.id ) {
+     storeJson(node.id.name, classNamefunctionName);
   } else if (node.parent) {
     findParent(node.parent, classNamefunctionName);
   }
