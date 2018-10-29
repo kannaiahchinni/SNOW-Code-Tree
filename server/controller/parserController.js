@@ -16,7 +16,7 @@ exports.getASTtreeJSON = function(req,res,next) {
   var programObject = req.body;
   variables = [];
   variableList = {};
-  variableList['gs'] = 'gs';
+  variableList['gs'] = ['gs'];
   result = [];
   memberFuncitons = {};
 
@@ -92,6 +92,8 @@ function parseCallExpression(node) {
     var name = getReference(node.callee.object.name);
     if(name && name !== "undefined")
       findParent(node, getReference(node.callee.object.name) + '.' + node.callee.property.name)
+  } else if (node.parent && node.callee && !node.callee.object && node.parent.type ==='ExpressionStatement' ) {
+      findParent(node,node.callee.name);
   }
 
 }
@@ -152,6 +154,7 @@ function referenceStore(methodName) {
 }
 
 function varaibleStore(className, variableName) {
+  console.log(className);
   var list = variableList[className] || [];
   if (list.indexOf(variableName) < 0) {
     list.push(variableName);
