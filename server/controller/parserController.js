@@ -5,7 +5,7 @@ var estraverse = require('estraverse');
 var variableList = {};
 var variables = [];
 var memberFuncitons = {};
-var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery','next','query','Date','getTime'];
+var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery','next','query','Date','getTime','round','random','trim'];
 var scriptName;
 
 
@@ -40,9 +40,9 @@ exports.getASTtreeJSON = function(req,res,next) {
         node.parent = parent;
         if (node.type === 'Property') {
 
-          if (node.key.name !== 'type') {
+          if (node.key.name !== 'type' && node.value && node.value.type === 'FunctionExpression') {
             referenceStore(node.key.name);
-          } else {
+          } else if(node.value ) {
             scriptName = node.value.value;
           }
 
