@@ -5,7 +5,10 @@ var estraverse = require('estraverse');
 var variableList = {};
 var variables = [];
 var memberFuncitons = {};
-var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery','next','query','Date','getTime','round','random','trim'];
+var callStack =  {};
+var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate',
+  'push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery',
+  'next','query','Date','getTime','round','random','trim'];
 var scriptName;
 
 
@@ -17,13 +20,15 @@ exports.getASTtreeJSON = function(req,res,next) {
   variables = [];
   variableList = {};
   variableList['gs'] = ['gs'];
-  result = [];
+  //result = [];
   memberFuncitons = {};
+  callStack = {};
 
 
   var ast = espree.parse(programObject.data, {
     range: true,
-    sourceType: "module",
+    loc:true,
+    sourceType: "script",
     ecmaVersion: 6,
     ecmaFeatures: {
       jsx: true,
@@ -64,16 +69,16 @@ exports.getASTtreeJSON = function(req,res,next) {
     });
 
   }catch(e) {
-  console.log(e);
+    console.log(e);
   }
-  console.log(memberFuncitons);
-  return res.status(200).json(memberFuncitons);
+  var result = {memberFuncitons: memberFuncitons, callStack: callStack};
+  return res.status(200).json(result);
 
 }
 
 function parseExpressionStatement(node) {
   if (node.expression.type === 'NewExpression') {
-    findParent(node, node.expression.callee.name + '');
+    findParent(node, node.expression.callee.name + '', node.loc);
   }
 }
 
@@ -81,19 +86,20 @@ function parseCallExpression(node) {
 
   // handle calling new classname().functionName()
   if (node.callee && node.callee.object && node.callee.object.type === 'NewExpression') {
-    findParent(node, node.callee.object.callee.name + '.' + node.callee.property.name);
+    findParent(node, node.callee.object.callee.name + '.' + node.callee.property.name, node.loc);
   } else if (node.callee && node.callee.object && node.callee.object.object && node.callee.object.object.type === 'ThisExpression') {
     var cname = 'this.' + node.callee.object.property.name;
-    findParent(node, getClassName(cname, variableList) + '.' + node.callee.property.name);
+    findParent(node, getClassName(cname, variableList) + '.' + node.callee.property.name, node.loc);
   } else if (node.callee && node.callee.object && node.callee.object.type === 'ThisExpression') {
-    findParent(node, variables[0] + '.' + node.callee.property.name);
+    findParent(node, variables[0] + '.' + node.callee.property.name, node.loc);
 
-  } else if( node.callee && node.callee.object && ignoreObjectList.indexOf(getReference(node.callee.object.name)) < 0  && ignoreObjectList.indexOf(node.callee.property.name) < 0 ) { //if(node.parent.type === 'AssignmentExpression' || node.parent.type === 'VariableDeclarator'){
+  } else if( node.callee && node.callee.object && ignoreObjectList.indexOf(getReference(node.callee.object.name)) < 0  &&
+    ignoreObjectList.indexOf(node.callee.property.name) < 0 ) { //if(node.parent.type === 'AssignmentExpression' || node.parent.type === 'VariableDeclarator'){
     var name = getReference(node.callee.object.name);
     if(name && name !== "undefined")
-      findParent(node, getReference(node.callee.object.name) + '.' + node.callee.property.name)
-  } else if (node.parent && node.callee && !node.callee.object && node.parent.type ==='ExpressionStatement' ) {
-      findParent(node,node.callee.name);
+      findParent(node, getReference(node.callee.object.name) + '.' + node.callee.property.name, node.loc)
+  } else if (node.parent && node.callee && !node.callee.object && node.parent.type ==='ExpressionStatement') {
+    findParent(node,node.callee.name, node.loc);
   }
 
 }
@@ -101,7 +107,8 @@ function parseCallExpression(node) {
 
 function parseVariableDeclarator(node) {
 
-  if (node.init && node.init.callee && (node.init.type === 'NewExpression' || node.init.callee.object) && ignoreObjectList.indexOf(node.init.callee.object ? node.init.callee.object.name : node.init.callee.name) < 0) {
+  if (node.init && node.init.callee && (node.init.type === 'NewExpression' || node.init.callee.object) &&
+    ignoreObjectList.indexOf(node.init.callee.object ? node.init.callee.object.name : node.init.callee.name) < 0) {
     var objName = node.init.callee.object ? node.init.callee.object.name + '.' + node.init.callee.property.name : node.init.callee.name;
     if (node.init.type !== 'NewExpression') {
       objName = node.init.callee.object.name;
@@ -119,9 +126,9 @@ function parseNewExpression(node) {
 
   if(node.callee   && node.parent.type !== 'MemberExpression') {
     if(node.callee.type === 'Identifier' && ignoreObjectList.indexOf(node.callee.name) < 0) {
-      findParent(node, node.callee.name);
+      findParent(node, node.callee.name, node.loc);
     }else if ( node.callee.type === 'MemberExpression' && node.callee.object && ignoreObjectList.indexOf(node.callee.property.name) < 0) {
-      findParent(node, node.callee.object.name+'.'+node.callee.property.name);
+      findParent(node, node.callee.object.name+'.'+node.callee.property.name, node.loc);
     }
   }
 
@@ -133,7 +140,8 @@ function parseAssignmentExpression(node) {
   var ignore = ['Identifier', 'ObjectExpression', 'Literal', 'UnaryExpression']
   if (node.left && node.right && node.right.type === 'FunctionExpression') {
     referenceStore(node.left.property.name);
-  } else if (node.left && node.right && ignore.indexOf(node.right.type) < 0 && node.left.object && node.left.object.type === 'ThisExpression' && node.right.callee && node.right.callee.object) {
+  } else if (node.left && node.right && ignore.indexOf(node.right.type) < 0 && node.left.object
+    && node.left.object.type === 'ThisExpression' && node.right.callee && node.right.callee.object) {
     var objName = node.right.callee.object.name;
     if (node.right.callee.object.type === 'NewExpression' && node.right.callee.object.callee) {
       objName = node.right.callee.object.callee.name
@@ -151,29 +159,36 @@ function parseAssignmentExpression(node) {
 function referenceStore(methodName) {
   var list = memberFuncitons[methodName] || [];
   memberFuncitons[methodName] = list;
+  var rList = callStack[methodName] || [];
+  callStack[methodName] = rList;
 }
 
 function varaibleStore(className, variableName) {
-  console.log(className);
   var list = variableList[className] || [];
   if (list.indexOf(variableName) < 0) {
     list.push(variableName);
   }
   variableList[className] = list;
-  console.log(variableList);
 }
 
-function storeJson(methodName, classNamefunctionName) {
+function storeJson(methodName, classNamefunctionName, loc) {
   var list = memberFuncitons[methodName] || [];
   if (list.indexOf(classNamefunctionName) < 0) {
     list.push(classNamefunctionName);
   }
   memberFuncitons[methodName] = list;
-  console.log(memberFuncitons);
+
+
+  // storing data to represent like call stack.
+  if(loc) {
+    var rList = callStack[methodName] || [];
+    rList.push({ reference: classNamefunctionName, line: loc.start.line , column: loc.start.column });
+    callStack[methodName] = rList;
+  }
 }
 
 function getClassName(variable, list) {
-  var name;
+  var name = undefined ;
   var keys = Object.keys(variableList); //variableList
   if (keys.length > 0) {
     keys.forEach(function (key) {
@@ -184,13 +199,13 @@ function getClassName(variable, list) {
 }
 
 
-function findParent(node, classNamefunctionName) {
+function findParent(node, classNamefunctionName, loc) {
   if (node.type === 'Property' || (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression')) {
-    storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName)
+    storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName, loc)
   } else if((node.id && node.type === 'FunctionExpression' ||  node.type === 'FunctionDeclaration') && node.id ) {
-     storeJson(node.id.name, classNamefunctionName);
+     storeJson(node.id.name, classNamefunctionName, loc);
   } else if (node.parent) {
-    findParent(node.parent, classNamefunctionName);
+    findParent(node.parent, classNamefunctionName,loc);
   }
 
 }

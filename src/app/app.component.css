@@ -17,3 +17,7 @@
 .mat-expansion-indicator::after {
     color:#fff !important;
 }
+
+.reference {
+    color: red;
+}

@@ -20,6 +20,17 @@
 
   </div>
   <div class="right-container">
+
+      <!-- <ul class="tree-parent">
+        <li *ngFor="let key of keys" class="tree-parent-element" (click)="showTree(key)"> {{ key }}
+          <ul [hidden]="key !== currentKey " class="tree-child">
+            <li *ngFor="let data of result[key]">
+            {{ data.reference }} (at {{data.line }}: {{ data.column }})
+          </ul>
+        </li>
+
+      </ul> -->
+
     <mat-accordion>
       <mat-expansion-panel *ngFor="let item of keys" >
         <mat-expansion-panel-header>
@@ -27,8 +38,8 @@
             {{ item }} - {{ output[item].length }}
           </mat-panel-title>
         </mat-expansion-panel-header>
-        <div *ngFor="let data of output[item]" class="data-div">
-          {{ data}}
+        <div *ngFor="let data of result[item]" class="data-div">
+          {{ data.reference }} <span class="reference"> (at {{data.line }}: {{ data.column }}) </span>
         </div>
       </mat-expansion-panel>
     </mat-accordion>
