@@ -4,7 +4,7 @@ var estraverse = require('estraverse');
 
 var variableList = {};
 var variables = [];
-var memberFuncitons = {};
+var memberFunctions = {};
 var callStack =  {};
 var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate',
   'push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery',
@@ -15,17 +15,30 @@ var scriptName;
 var result = [];
 
 exports.getASTtreeJSON = function(req,res,next) {
-
+  // request should be array of objects having property name data.
   var programObject = req.body;
+  if(programObject.data) {
+     programObject.data.forEach(function(proCode) {
+        proCode.result = processRequest(proCode.data);
+     });
+  }
+  return res.status(200).json(programObject.data);
+}
+
+
+
+
+function processRequest(data) {
+ // var programObject = req.body;
   variables = [];
   variableList = {};
   variableList['gs'] = ['gs'];
   //result = [];
-  memberFuncitons = {};
+  memberFunctions = {};
   callStack = {};
 
 
-  var ast = espree.parse(programObject.data, {
+  var ast = espree.parse(data, {
     range: true,
     loc:true,
     sourceType: "script",
@@ -71,10 +84,12 @@ exports.getASTtreeJSON = function(req,res,next) {
   }catch(e) {
     console.log(e);
   }
-  var result = {memberFuncitons: memberFuncitons, callStack: callStack};
-  return res.status(200).json(result);
+  var result = {memberFunctions: memberFunctions, callStack: callStack};
+  return result;
 
 }
+
+
 
 function parseExpressionStatement(node) {
   if (node.expression.type === 'NewExpression') {
@@ -157,8 +172,8 @@ function parseAssignmentExpression(node) {
 }
 
 function referenceStore(methodName) {
-  var list = memberFuncitons[methodName] || [];
-  memberFuncitons[methodName] = list;
+  var list = memberFunctions[methodName] || [];
+  memberFunctions[methodName] = list;
   var rList = callStack[methodName] || [];
   callStack[methodName] = rList;
 }
@@ -172,11 +187,11 @@ function varaibleStore(className, variableName) {
 }
 
 function storeJson(methodName, classNamefunctionName, loc) {
-  var list = memberFuncitons[methodName] || [];
+  var list = memberFunctions[methodName] || [];
   if (list.indexOf(classNamefunctionName) < 0) {
     list.push(classNamefunctionName);
   }
-  memberFuncitons[methodName] = list;
+  memberFunctions[methodName] = list;
 
 
   // storing data to represent like call stack.

@@ -19,11 +19,19 @@ export class AppComponent {
   constructor(private astService: AstService) {}
 
   getASTJSON() {
-    this.astService.getASTJSON(this.textAreaControl.value).subscribe(data => {
-      this.output = data.memberFuncitons;
-      this.result = data.callStack;
+
+    const request = [];
+    request.push({
+      data: this.textAreaControl.value,
+      result: ''
+    });
+    console.log(request);
+    this.astService.getASTJSON(request).subscribe(data => {
+      const resultData = data[0].result;
+      this.output = resultData.memberFunctions;
+      this.result = resultData.callStack;
       console.log(this.result);
-      this.outputControl.setValue(JSON.stringify(data));
+      this.outputControl.setValue(JSON.stringify(resultData));
       console.log(this.output);
       this.keys = Object.keys(this.output);
       console.log(this.keys);

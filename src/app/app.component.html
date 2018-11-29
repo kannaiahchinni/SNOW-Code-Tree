@@ -1,12 +1,13 @@
 <mat-toolbar color="primary">
   <span>{{ title }}</span>
   <span class="example-fill-remaining-space"></span>
-  <span> </span>
+  <span class="toggle-bar">
+  </span>
 </mat-toolbar>
 <div class="flex-container">
   <div class="left-container">
     <div class="flex-text-area">
-      <textarea mdInput class="text-area-control" placeholder="Please past your code to get references " [formControl]="textAreaControl"></textarea>
+       <textarea mdInput class="text-area-control" placeholder="Please past your code to get references " [formControl]="textAreaControl"></textarea>
     </div>
     <div class="flex-button-area">
       <button mat-raised-button color="primary" (click)="getASTJSON()"> Submit Code </button>
