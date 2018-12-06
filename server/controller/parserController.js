@@ -17,7 +17,9 @@ var result = [];
 exports.getASTtreeJSON = function(req,res,next) {
   // request should be array of objects having property name data.
   var programObject = req.body;
+  console.log(programObject);
   if(programObject.data) {
+    console.log(programObject.data);
      programObject.data.forEach(function(proCode) {
         console.log(proCode.data);
         proCode.result = processRequest(proCode.data);
