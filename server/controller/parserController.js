@@ -19,6 +19,7 @@ exports.getASTtreeJSON = function(req,res,next) {
   var programObject = req.body;
   if(programObject.data) {
      programObject.data.forEach(function(proCode) {
+        console.log(proCode.data);
         proCode.result = processRequest(proCode.data);
         proCode.data = "";
      });
