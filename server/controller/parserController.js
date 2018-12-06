@@ -20,12 +20,11 @@ exports.getASTtreeJSON = function(req,res,next) {
   if(programObject.data) {
      programObject.data.forEach(function(proCode) {
         proCode.result = processRequest(proCode.data);
+        proCode.data = "";
      });
   }
   return res.status(200).json(programObject.data);
 }
-
-
 
 
 function processRequest(data) {
