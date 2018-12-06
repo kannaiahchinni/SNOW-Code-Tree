@@ -188,12 +188,13 @@ function varaibleStore(className, variableName) {
 
 function storeJson(methodName, classNamefunctionName, loc) {
   var list = memberFunctions[methodName] || [];
-  if (list.indexOf(classNamefunctionName) < 0) {
-    list.push(classNamefunctionName);
+  var functionName = classNamefunctionName +"@@"+ loc.start.line +"@@"+ loc.start.column ;
+  console.log(functionName);
+  if (list.indexOf(functionName) < 0 ) {
+    list.push(functionName);
   }
+
   memberFunctions[methodName] = list;
-
-
   // storing data to represent like call stack.
   if(loc) {
     var rList = callStack[methodName] || [];
