@@ -4,8 +4,9 @@ const bodyParser = require('body-parser');
 const routes = require('./route');
 const cors = require('cors');
 
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit:'100mb'}));
+app.use(bodyParser.urlencoded({extended:true,limit:'100mb'}));
+
 
 var corsOptions = {
     origin: 'http://localhost:4200/',
