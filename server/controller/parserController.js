@@ -8,7 +8,7 @@ var memberFunctions = {};
 var callStack =  {};
 var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate',
   'push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery',
-  'next','query','Date','getTime','round','random','trim'];
+  'next','query','Date','getTime','round','random','trim','JSON', 'nil','indexOf','replace','substring','Math','floor','update'];
 var scriptName;
 
 
@@ -21,7 +21,7 @@ exports.getASTtreeJSON = function(req,res,next) {
   if(programObject.data) {
     console.log(programObject.data);
      programObject.data.forEach(function(proCode) {
-        console.log(proCode.data);
+        //console.log(proCode.data);
         proCode.result = processRequest(proCode.data);
         proCode.data = "";
      });
@@ -189,10 +189,14 @@ function varaibleStore(className, variableName) {
 }
 
 function storeJson(methodName, classNamefunctionName, loc) {
+
+  if(ignoreObjectList.indexOf(classNamefunctionName) > -1 )
+    return;
+
   var list = memberFunctions[methodName] || [];
   var functionName = classNamefunctionName +"@@"+ loc.start.line +"@@"+ loc.start.column ;
   console.log(functionName);
-  if (list.indexOf(functionName) < 0 ) {
+  if (list.indexOf(functionName) < 0  ) {
     list.push(functionName);
   }
 
@@ -216,7 +220,7 @@ function getClassName(variable, list) {
   return name;
 }
 
-
+/*
 function findParent(node, classNamefunctionName, loc) {
   if (node.type === 'Property' || (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression')) {
     storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName, loc)
@@ -227,6 +231,23 @@ function findParent(node, classNamefunctionName, loc) {
   }
 
 }
+*/
+
+function findParent(node, classNamefunctionName, loc) {
+  if ((node.type === 'Property' && node.parent.type !== 'ObjectExpression') || (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression')) {
+    storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName, loc)
+  } else if((node.id && node.type === 'FunctionExpression' ||  node.type === 'FunctionDeclaration') && node.id ) {
+    storeJson(node.id.name, classNamefunctionName, loc);
+  } else if(node.type === 'FunctionExpression' && node.parent.type === 'Property' && !node.id ) {
+    storeJson(node.parent.key.name, classNamefunctionName, loc);
+  } else if(node.type === 'Property' && node.parent.type === 'ObjectExpression'){
+    findParent(node.parent, classNamefunctionName,loc);
+  } else if (node.parent) {
+    findParent(node.parent, classNamefunctionName,loc);
+  }
+}
+
+
 
 function getReference(variableName) {
   var sName = getClassName(variableName);
