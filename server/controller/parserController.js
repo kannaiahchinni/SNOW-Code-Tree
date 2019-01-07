@@ -17,12 +17,19 @@ var result = [];
 exports.getASTtreeJSON = function(req,res,next) {
   // request should be array of objects having property name data.
   var programObject = req.body;
-  console.log(programObject);
+  //console.log(programObject);
   if(programObject.data) {
-    console.log(programObject.data);
+    //console.log(programObject.data);
      programObject.data.forEach(function(proCode) {
-        proCode.result = processRequest(proCode.data);
-        proCode.data = "";
+       try {
+         console.log(proCode.sys_id);
+         proCode.result = processRequest(proCode.data);
+         proCode.data = "";
+       }catch(error) {
+          Object.assign(proCode, {
+            error:e
+          });
+       }
      });
   }
   return res.status(200).json(programObject.data);
