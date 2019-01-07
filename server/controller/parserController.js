@@ -21,7 +21,6 @@ exports.getASTtreeJSON = function(req,res,next) {
   if(programObject.data) {
     console.log(programObject.data);
      programObject.data.forEach(function(proCode) {
-        //console.log(proCode.data);
         proCode.result = processRequest(proCode.data);
         proCode.data = "";
      });
@@ -38,8 +37,9 @@ function processRequest(data) {
   //result = [];
   memberFunctions = {};
   callStack = {};
+  var result = {memberFunctions: memberFunctions, callStack: callStack};
 
-
+  try {
   var ast = espree.parse(data, {
     range: true,
     loc:true,
@@ -53,7 +53,7 @@ function processRequest(data) {
   });
 
 
-  try {
+
 
     estraverse.traverse(ast, {
       enter: function (node, parent) {
@@ -84,9 +84,16 @@ function processRequest(data) {
     });
 
   }catch(e) {
-    console.log(e);
+    Object.assign(result,{
+      error:'error' + e
+    });
   }
-  var result = {memberFunctions: memberFunctions, callStack: callStack};
+
+  Object.assign(result,
+    {
+      memberFunctions: memberFunctions,
+      callStack: callStack
+    });
   return result;
 
 }
