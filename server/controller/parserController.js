@@ -6,7 +6,7 @@ var variableList = {};
 var variables = [];
 var memberFunctions = {};
 var callStack =  {};
-var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate',
+var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','current',
   'push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery',
   'next','query','Date','getTime','round','random','trim','JSON', 'nil','indexOf','replace','substring','Math','floor','update'];
 var scriptName;
@@ -276,4 +276,3 @@ function filterIngoreObjects(variableName) {
   }
   return result;
 }
-
