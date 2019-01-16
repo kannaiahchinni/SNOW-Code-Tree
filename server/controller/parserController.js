@@ -8,7 +8,7 @@ var memberFunctions = {};
 var callStack =  {};
 var ignoreObjectList = ['GlideRecord', 'gs', '', undefined, 'Class', 'Object','GlideDateTime','GlideAggregate','current',
   'push','join','addOrCondition', 'JSUtil', 'toString', 'isArray','hasRole', 'getValue', 'getDisplayValue','addQuery',
-  'next','query','Date','getTime','round','random','trim','JSON', 'nil','indexOf','replace','substring','Math','floor','update'];
+  'next','query','Date','getTime','round','random','trim','JSON', 'nil','indexOf','replace','substring','Math','floor','update','GlideRunScriptJob'];
 var scriptName;
 
 
@@ -85,6 +85,12 @@ function processRequest(data) {
         }else if( node.type === 'FunctionExpression' || node.type === 'FunctionDeclaration' ) {
            if( node.id )
             referenceStore(node.id.name);
+        }else if( node.type === 'Literal' ) {
+          if(node && node.value && node.value.toString().indexOf("new ") > -1) {
+            var data = node.value.replace(/\((.*)\)/g,'');
+            data = data.replace(/\('/g,'').replace(/^new /,'');
+            findParent(node, data, node.loc);
+          }
         }
       }
     });
