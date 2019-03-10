@@ -59,3 +59,11 @@ body, html {
 .shadow {
   box-shadow:0 3px 11px 0 rgba(0, 0, 0, 0.78)
 }
+
+.hide {
+  display: none !important;
+}
+
+#launchBody h3 {
+  display: none;
+}

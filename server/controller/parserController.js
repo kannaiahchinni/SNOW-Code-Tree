@@ -21,7 +21,7 @@ exports.getASTtreeJSON = function (req, res, next) {
     programObject.data.forEach(function (proCode) {
       try {
         if (proCode.data != '') {
-          scriptName = proCode.name || 'ScheduleJob',
+          scriptName = proCode.name ,
             scriptType = proCode.type;
           proCode.result = processRequest(proCode.data, proCode.type, proCode.name);
           proCode.data = "";
@@ -273,7 +273,7 @@ function findParent(node, classNamefunctionName, loc) {
 */
 
 function findParent(node, classNamefunctionName, loc) {
-  if (scriptType === 'schedule') {
+  if (['schedule', 'fixscript','widget'].indexOf(scriptType) > -1) {
     storeJson(scriptName, classNamefunctionName, loc);
   } else if ((node.type === 'Property' && node.parent.type !== 'ObjectExpression') || (node.type === 'AssignmentExpression' && node.right.type === 'FunctionExpression')) {
     storeJson((node.type === 'AssignmentExpression' ? node.left.property.name : node.key.name), classNamefunctionName, loc)

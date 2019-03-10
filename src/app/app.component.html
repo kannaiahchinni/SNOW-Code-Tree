@@ -5,8 +5,11 @@
   <span class="toggle-bar">
   </span>
 </mat-toolbar>
-<div class="flex-container">
+<div class="flex-container ">
   <div class="left-container">
+    <div class="flex-text-area">
+       <input type="text" placeholder="Script Type" [formControl]="typeControl" >
+    </div>
     <div class="flex-text-area">
        <textarea mdInput class="text-area-control" placeholder="Please past your code to get references " [formControl]="textAreaControl"></textarea>
     </div>
@@ -22,6 +25,26 @@
 
   </div>
   <div class="right-container">
+
+    <!-- <label class="checkbox-container" hidden="true">
+      <input type="checkbox" name="exclude" value="exclude"  id="exclude" checked="checked" />
+      <span class="checkmark checkbox1"></span>
+    </label> -->
+
+    <input type="file" (change)="fileContent($event)" />
+    <ul>
+      <li *ngFor="let reg of registrations" (click)="getLanuchUrl(reg)">
+        <div> {{ reg.courseTitle }}</div>
+        <div> {{ reg.learnerFirstName}} {{ reg.learnerLastName }}</div>
+      </li>
+    </ul>
+
+
+    <div *ngIf="launchUrl">
+      <iframe #courseFrame [src]=launchUrl (load)="resizeFrame(courseFrame)" class="my-iframe"> </iframe>
+    </div>
+
+
 
       <!-- <ul class="tree-parent">
         <li *ngFor="let key of keys" class="tree-parent-element" (click)="showTree(key)"> {{ key }}
@@ -48,3 +71,47 @@
   </div>
 </div>
 
+
+
+<div class="hide" >
+
+<mat-grid-list cols="12" rowHeight="60px">
+  <mat-grid-tile colspan="1" rowspan="1">
+    <button  mat-raised-button color="primary" (click)="getList('course')" > Course List </button>
+  </mat-grid-tile>
+  <mat-grid-tile colspan="2" rowspan="1">
+    <button  mat-raised-button color="primary" (click)="getList('registration')" > Registered Courses </button>
+  </mat-grid-tile>
+</mat-grid-list>
+
+
+  <mat-grid-list cols="2">
+    <mat-grid-tile colspan="1" rowspan="1">
+      <mat-grid-tile-header> Courses </mat-grid-tile-header>
+      <ul *ngIf="courseList.length > 0">
+        <li *ngFor="let reg of courseList" (click)="getCourseDetails(reg)">
+          <div> {{ reg.title }}</div>
+          <div> {{ reg.learnerFirstName }} {{ reg.learnerLastName }}</div>
+        </li>
+      </ul>
+    </mat-grid-tile>
+
+    <mat-grid-tile colspan="1" rowspan="1">
+      <mat-grid-tile-header> Registered Courses </mat-grid-tile-header>
+      <ul *ngIf="registrations.length > 0">
+        <li *ngFor="let reg of registrations" (click)="getLanuchUrl(reg)">
+          <div> {{ reg.courseTitle }}</div>
+          <div> {{ reg.learnerFirstName }} {{ reg.learnerLastName }}</div>
+        </li>
+      </ul>
+    </mat-grid-tile>
+
+  </mat-grid-list>
+
+
+
+</div>
+
+<div *ngIf="launchUrl">
+  <iframe #courseFrame [src]=launchUrl (load)="resizeFrame(courseFrame)" class="my-iframe"> </iframe>
+</div>
